@@ -29,7 +29,8 @@ const toFlag = (r: FlagRow): Flag => ({
 });
 
 export async function createPostgresStore(url: string): Promise<Store> {
-	const sql = postgres(url, { max: 5, prepare: false });
+	// max:1 + prepare:false suit serverless behind a transaction pooler (e.g. Supabase :6543).
+	const sql = postgres(url, { max: 1, prepare: false });
 
 	await sql`
 		CREATE TABLE IF NOT EXISTS fg_projects (

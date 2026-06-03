@@ -21,12 +21,11 @@ pnpm dev                      # http://localhost:5173
 
 Open the URL, sign in with your `ADMIN_TOKEN`, create a project, and add flags.
 
-### Production (Node)
+### Production
 
-```bash
-pnpm build
-ADMIN_TOKEN=... node build    # serves on PORT (default 3000)
-```
+Ships with `@sveltejs/adapter-vercel` (Node 22). Deploy to Vercel (see below) or
+swap the adapter in `svelte.config.js` for `@sveltejs/adapter-node` to run it as a
+standalone Node server elsewhere.
 
 ---
 
@@ -134,10 +133,27 @@ the hood:
 
 ## Deploy on Vercel (with Postgres)
 
-1. Push this folder to a repo and import it on Vercel.
-2. This project ships with `adapter-node`, which also runs on Vercel; or switch
-   to `@sveltejs/adapter-vercel`.
-3. Set env: `ADMIN_TOKEN`, `STORE=postgres`, `DATABASE_URL`.
+The file store lives on local disk and is **not** persisted on serverless, so
+production must use `STORE=postgres`. The service creates its own `fg_projects`
+and `fg_flags` tables on first request — no migration step.
 
-The file store is for local/dev only — its JSON file is not persisted on
-serverless platforms. Use Postgres in production.
+1. **Get a Postgres URL.** Any Postgres works; Supabase free tier is easy. In
+   Supabase use the **Transaction pooler** connection string (host ends in
+   `...pooler.supabase.com`, port `6543`) — that's what the `max:1, prepare:false`
+   pool is tuned for.
+2. **Import the repo on Vercel** (New Project → pick this repo). Framework auto-
+   detects as SvelteKit; leave build settings default.
+3. **Set Environment Variables** (Project → Settings → Environment Variables):
+   | Name           | Value                                              |
+   | -------------- | -------------------------------------------------- |
+   | `ADMIN_TOKEN`  | a long secret, e.g. `openssl rand -hex 24`         |
+   | `STORE`        | `postgres`                                          |
+   | `DATABASE_URL` | your pooler connection string (with the password)  |
+4. **Deploy.** Open the URL, sign in with `ADMIN_TOKEN`, create a project.
+5. **Verify the read API:**
+   ```bash
+   curl -H "x-api-key: <project key>" https://<your-app>.vercel.app/api/v1/flags
+   ```
+
+> Reusing an existing Supabase project (e.g. another app's)? Fine — FeatureGate's
+> tables are prefixed `fg_` and won't collide.
