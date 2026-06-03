@@ -19,10 +19,47 @@ const toProject = (r: ProjRow): Project => ({
 	apiKey: r.api_key,
 	createdAt: r.created_at.toISOString()
 });
+/**
+ * Normalize a value read from the jsonb column into the declared type.
+ * The driver may hand back an already-parsed JS value or a raw JSON-text string
+ * depending on environment; we also unwrap any accidental multi-encoding written
+ * by older buggy code, then coerce to the flag's declared type.
+ */
+function readValue(type: FlagType, raw: unknown): Flag['value'] {
+	let v = raw;
+	if (typeof v === 'string') {
+		try {
+			v = JSON.parse(v);
+		} catch {
+			/* a plain string, leave as-is */
+		}
+		// peel off repeated JSON.stringify layers from legacy writes
+		while (typeof v === 'string') {
+			try {
+				const inner = JSON.parse(v);
+				if (inner === v) break;
+				v = inner;
+			} catch {
+				break;
+			}
+		}
+	}
+	switch (type) {
+		case 'boolean':
+			return typeof v === 'boolean' ? v : v === 'true';
+		case 'number':
+			return typeof v === 'number' ? v : Number(v);
+		case 'string':
+			return typeof v === 'string' ? v : String(v);
+		default:
+			return v;
+	}
+}
+
 const toFlag = (r: FlagRow): Flag => ({
 	key: r.key,
 	type: r.type as FlagType,
-	value: r.value,
+	value: readValue(r.type as FlagType, r.value),
 	enabled: r.enabled,
 	description: r.description,
 	updatedAt: r.updated_at.toISOString()
@@ -83,7 +120,7 @@ export async function createPostgresStore(url: string): Promise<Store> {
 		async upsertFlag(projectId, flag) {
 			const rows = await sql<FlagRow[]>`
 				INSERT INTO fg_flags (project_id, key, type, value, enabled, description, updated_at)
-				VALUES (${projectId}, ${flag.key}, ${flag.type}, ${JSON.stringify(flag.value)}::jsonb,
+				VALUES (${projectId}, ${flag.key}, ${flag.type}, ${sql.json(flag.value as never)},
 					${flag.enabled}, ${flag.description}, now())
 				ON CONFLICT (project_id, key) DO UPDATE SET
 					type = EXCLUDED.type, value = EXCLUDED.value, enabled = EXCLUDED.enabled,
