@@ -1,0 +1,131 @@
+:root {
+	--bg: #f5f6f8;
+	--card: #ffffff;
+	--ink: #11151c;
+	--mute: #6b7280;
+	--faint: #9aa1ad;
+	--line: #e6e8ec;
+	--accent: #4f46e5;
+	--accent-soft: #eef2ff;
+	--ok: #16a34a;
+	--danger: #dc2626;
+	--mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+	--sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+	box-sizing: border-box;
+}
+html,
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--ink);
+	font-family: var(--sans);
+	-webkit-font-smoothing: antialiased;
+}
+a {
+	color: var(--accent);
+	text-decoration: none;
+}
+button {
+	font-family: inherit;
+}
+code {
+	font-family: var(--mono);
+}
+
+.wrap {
+	max-width: 860px;
+	margin: 0 auto;
+	padding: 0 18px;
+}
+.card {
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: 14px;
+}
+.btn {
+	border: none;
+	border-radius: 10px;
+	background: var(--accent);
+	color: white;
+	font-weight: 600;
+	font-size: 14px;
+	padding: 10px 16px;
+	cursor: pointer;
+}
+.btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+.btn-ghost {
+	background: white;
+	color: var(--ink);
+	border: 1px solid var(--line);
+}
+.btn-danger {
+	background: white;
+	color: var(--danger);
+	border: 1px solid var(--line);
+}
+.input {
+	padding: 10px 12px;
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	font-size: 14px;
+	font-family: inherit;
+	background: white;
+	outline: none;
+	width: 100%;
+}
+.input:focus {
+	border-color: var(--accent);
+}
+.muted {
+	color: var(--mute);
+}
+.mono {
+	font-family: var(--mono);
+}
+
+/* toggle switch */
+.switch {
+	width: 44px;
+	height: 26px;
+	border-radius: 999px;
+	border: none;
+	background: var(--line);
+	position: relative;
+	cursor: pointer;
+	flex-shrink: 0;
+	transition: background 0.15s;
+	padding: 0;
+}
+.switch.on {
+	background: var(--accent);
+}
+.switch .knob {
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: white;
+	transition: transform 0.15s;
+}
+.switch.on .knob {
+	transform: translateX(18px);
+}
+
+.badge {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	padding: 2px 8px;
+	border-radius: 6px;
+	background: var(--accent-soft);
+	color: var(--accent);
+	text-transform: uppercase;
+}
